@@ -29,7 +29,7 @@ p ∙ idp = p
 
 infix 50 _∙_
 
-transport : ∀ {α β} {X : Set α} (Y : X → Set β) {x y : X}
+transport : ∀ {X : Set} (Y : X → Set) {x y : X}
             (p : x == y) → (Y x) → (Y y)
 transport Y idp y = y
 

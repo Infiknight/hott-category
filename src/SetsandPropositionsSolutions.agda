@@ -14,6 +14,8 @@ open import PropositionsAsTypes
 open import Equality
 open import Bool
 
+open import Agda.Primitive renaming (Level to ULevel)
+
 module SetsandPropositionsSolutions where
 
 
