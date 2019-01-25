@@ -126,7 +126,7 @@ contr-implies-hprop c = λ x x' → is-contr.path c x ∙ ! (is-contr.path c x')
 contractible-paths :  {X : Set} (y : X) → is-contr (Σ X (λ x → x == y))
 contractible-paths x = build-is-contr (x , idp) λ { (.x , idp) → idp }
   {- Again this is a quick solution using pattern matching with lambda, but can also be done
-     using local definitions. There is another, less direct but in some ways more 
+     using local definitions. There is another, less direct but in some ways more
      informative proof in the HoTT book Lemma 3.11.8, this using the encode decode method
      for Σ-types together with a similar explicit description for transport in path types. -}
 
@@ -149,7 +149,7 @@ postulate
 -}
 hprop-dep-prod : {X : Set} {Y : X → Set} (ihp : (x : X) → is-hprop (Y x)) →
                  is-hprop ((x : X) → Y x)
-hprop-dep-prod ihp = λ f g → funext f g λ x → ihp x (f x) (g x)  
+hprop-dep-prod ihp = λ f g → funext f g λ x → ihp x (f x) (g x)
 
 {- Exercise 8: Prove that is-hprop is itself an hprop (i.e. a type X can only be
    an hprop in one way
@@ -167,10 +167,8 @@ is-hset-is-hprop ihs1 ihs2 = funext ihs1 ihs2 (λ x → funext (ihs1 x) (ihs2 x)
    as above.
 -}
 contr-has-contr-paths : {X : Set} → (is-contr X) → ((x y : X) → is-contr (x == y))
-contr-has-contr-paths c x y = let
-                              ihp = λ x' y' → (contr-implies-hprop c x' y')
-                              in
-                              build-is-contr (ihp x y) λ p → all-hprops-are-hsets ihp x y p _
+contr-has-contr-paths c x y = let ihp = λ x' y' → (contr-implies-hprop c x' y')
+                              in build-is-contr (ihp x y) λ p → all-hprops-are-hsets ihp x y p _
 
 
 {- Exercise 10: Prove that is-contr is an hprop.
@@ -343,7 +341,7 @@ not-≠-idf = modus-tollens (λ p → app= not (idf Bool) p false) true-≠-fals
 -}
 qinv-is-inj : {X Y : Set} (f : X → Y) (inv : qinv f) →
               (x y : Y) → (p : qinv.g inv x == qinv.g inv y) → (x == y)
-qinv-is-inj f inv x y p = ! (qinv.f-g inv x) ∙ (ap f p ∙ qinv.f-g inv y)  
+qinv-is-inj f inv x y p = ! (qinv.f-g inv x) ∙ (ap f p ∙ qinv.f-g inv y)
 {- By sketching it out on paper we can see that this is the composition
    of three paths. Each time we fill in a path it tells us what on of the
    end points of the neighbouring path should be.
@@ -383,7 +381,7 @@ p≠q = modus-tollens (λ α → ap (Equiv.f) (qinv-is-inj (idtoequiv Bool Bool)
    then applying qinv-is-inj. Note that for this to work depends on the particular definition
    of ua, in particular that it was defined from inverse-qinv.
 -}
-   
+
 
 
 {- (e) Deduce that Set is not a set -}
