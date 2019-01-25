@@ -43,7 +43,6 @@ module encode-decode {X : PreCategory} {x y : PreCategory.Objects X} {f : PreCat
   decode : (i j : is-iso X x y f) → is-iso-eq i j → (i == j)
   decode record { g = g ; a = a ; b = b } record { g = .g ; a = .a ; b = .b } record { fst-eq = idp ; snd-eq = idp ; trd-eq = idp } = idp
 
-
 module _ (X : PreCategory) where
   open PreCategory X
   open encode-decode
@@ -55,17 +54,28 @@ module _ (X : PreCategory) where
   ap4 g f .f idp = idp
 
 
-
-
   Lemma913a : (x y : Objects) (f : Hom x y) → is-hprop(is-iso X x y f)
   Lemma913a x y f iso-f iso-f' = let g-eq-g' = Lemma1 x y f iso-f iso-f'
-                                     g-f-eq-idx = (Homs-are-hsets x y) in
-                decode iso-f iso-f' (record { fst-eq = g-eq-g'; snd-eq = transport {! !} g-eq-g' {!   !} ; trd-eq = {!   !} })
+                                     g-f-eq-idx = (Homs-are-hsets x x) ((is-iso.g iso-f') ∘ f) (identity x)
+                                     g-f-eq-idy = (Homs-are-hsets y y) (f ∘ (is-iso.g iso-f')) (identity y) in
+                decode iso-f iso-f'
+                 (record { fst-eq = g-eq-g';
+                           snd-eq = g-f-eq-idx (transport (λ a → (a ∘ f) == (identity x)) g-eq-g' (is-iso.a iso-f)) (is-iso.a iso-f') ;
+                           trd-eq = g-f-eq-idy (transport (λ a → (f ∘ a) == (identity y)) g-eq-g' (is-iso.b iso-f)) (is-iso.b iso-f') })
     where
       Lemma1 : (x y : Objects ) (f : Hom x y) (i j : is-iso X x y f) → is-iso.g i == is-iso.g j
       Lemma1  x y f i j = ! (equality_right (is-iso.g i)) ∙ (ap4 (is-iso.g i) (identity x) (is-iso.g j ∘ f) (! (is-iso.a j)) ∙ (! (composition (is-iso.g i) f (is-iso.g j))  ∙ (ap3 (f ∘ is-iso.g i) (identity y) (is-iso.g j) (is-iso.b i) ∙ equality_left (is-iso.g j))))
 
       --Lemma2 : (x y : Objects) (f : Hom x y) (i j : is-iso X x y f)
+
+
+  _≅_ : Objects → Objects → Set
+  _≅_ a b = Σ (Hom a b) (is-iso X a b)
+
+  Lemma913b : (a b : Objects) → is-hset (a ≅ b)
+  -- Lemma913b a b = λ x y x₁ y₁ → {!   !}
+  Lemma913b a b = all-hprops-are-hsets λ x y → {!    !}
+    
 
 
 
