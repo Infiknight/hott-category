@@ -8,15 +8,15 @@
    simplify some things just for today. We won't use it again.
 -}
 
-open import PropositionsAsTypes
+open import lib.PropositionsAsTypes
   {- The file PropositionsAsTypes contains several functions that we defined
      in the last two classes. -}
-open import Equality
-open import Bool
+open import lib.Equality
+open import lib.Bool
 
 open import Agda.Primitive renaming (Level to ULevel)
 
-module SetsandPropositionsSolutions where
+module lib.SetsandPropositionsSolutions where
 
 
 {- Recall the definition of Σ types from last time. -}

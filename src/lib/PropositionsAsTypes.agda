@@ -1,10 +1,10 @@
 {-# OPTIONS --without-K #-}
 
-open import Equality
-open import Bool
+open import lib.Equality
+open import lib.Bool
 open import Agda.Primitive renaming (_⊔_ to lmax)
 
-module PropositionsAsTypes where
+module lib.PropositionsAsTypes where
 
 {- Recall from last time that we can define True and False as the types ⊤ and ⊥ below. -}
 data ⊥ : Set where
@@ -78,4 +78,3 @@ infix 30 _≠_
 -}
 true-≠-false : true ≠ false
 true-≠-false ()
-
