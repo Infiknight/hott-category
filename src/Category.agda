@@ -123,9 +123,18 @@ functor-PreCategory A B = record
                             ; Hom = λ F G → natural-transformation F G
                             ; Homs-are-hsets = {!!}
                             ; identity = λ F → record{component = λ x → PreCategory.identity B (Functor.F-objects F x) ; naturality = λ f → PreCategory.equality_left B (Functor.F-arrows F f) ∙ ! (PreCategory.equality_right B (Functor.F-arrows F f))}
-                            ; _∘_ = λ g f → record { component = λ x → PreCategory._∘_ B (component g x) (component f x) ; naturality = λ f₁ → PreCategory.composition {!!} {!!} {!!} {!!} }
+                            ; _∘_ = λ g f → record { component = λ x → PreCategory._∘_ B (component g x) (component f x) ; naturality = {!!} }
                             ; equality_right = {!!}
                             ; equality_left = {!!}
                             ; composition = {!!}
                             }
-    
+
+open Functor
+open PreCategory
+Functor-composition : {A B C : PreCategory} (F : Functor A B) (G : Functor B C) → (Functor A C)
+Functor-composition  F G = record
+                             { F-objects = λ x → F-objects G (F-objects F x) 
+                             ; F-arrows = λ f → F-arrows G (F-arrows F f)
+                             ; F-identity = λ x → {!!}
+                             ; F-composition = {!!}
+                             }
