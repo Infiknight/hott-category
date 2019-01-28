@@ -47,3 +47,20 @@ functor-precategory A B = record { objects = Functor A B
                                   ; ∘-unit-l = {!   !}
                                   ; ∘-unit-r = {!   !}
                                   ; assoc = {!   !} }
+
+
+
+_*_ : {A B C : Precategory} (G : Functor B C) (F : Functor A B) → (Functor A C)
+_*_  G F = record
+                             { on-objects = λ x → G on-obj (F on-obj x) 
+                             ; on-arrows = λ f →  G on-arr (F on-arr f)
+                             ; respects-id = λ x → ap (λ f → G on-arr f) (respects-id F x) ∙ respects-id G ( F on-obj x)
+                             ; respects-comp = λ f g → ap (λ f → G on-arr f) (respects-comp F f g) ∙ respects-comp G (F on-arr f) (F on-arr g)
+                             }
+
+
+left-composite : {A B C : Precategory} (F : Functor A B) (G H : Functor B C) (N : Natural-transformation G H) → (Natural-transformation (G * F) (H * F))
+left-composite F G H N = record { component = λ x → N at (F on-obj x) ; naturality = λ f → naturality N (F on-arr f) }
+
+right-composite : {B C D : Precategory} (G H : Functor B C) (K : Functor C D) (N : Natural-transformation G H)  → (Natural-transformation (K * G) (K * H))
+right-composite G H K N = record { component = λ x → K on-arr (component N x) ; naturality = λ {x} {y} f →  (! (respects-comp K (component N x) (H on-arr f)) ∙ ap (_on-arr_ K) (naturality N f)) ∙ respects-comp K (G on-arr f) (component N y)}
