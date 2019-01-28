@@ -54,10 +54,10 @@ module _ (X : PreCategory) where
   ap4 : {x y z : Objects} (g : Hom x y) (f f' : Hom y z) (p : f == f') → ((f ∘ g) == (f' ∘ g))
   ap4 g f .f idp = idp
 
-  Lemma913a : (x y : Objects) (f : Hom x y) → has-all-paths (is-iso X x y f)
-  Lemma913a x y f iso-f iso-f' = let g-eq-g' = Lemma1 x y f iso-f iso-f'
-                                     g-f-eq-idx = has-level-apply (Homs-are-hsets x x) ((is-iso.g iso-f') ∘ f) (identity x)
-                                     g-f-eq-idy = has-level-apply (Homs-are-hsets y y) (f ∘ (is-iso.g iso-f')) (identity y) in
+  Lemma913a' : (x y : Objects) (f : Hom x y) → has-all-paths (is-iso X x y f)
+  Lemma913a' x y f iso-f iso-f' = let g-eq-g' = Lemma1 x y f iso-f iso-f'
+                                      g-f-eq-idx = has-level-apply (Homs-are-hsets x x) ((is-iso.g iso-f') ∘ f) (identity x)
+                                      g-f-eq-idy = has-level-apply (Homs-are-hsets y y) (f ∘ (is-iso.g iso-f')) (identity y) in
                 decode iso-f iso-f'
                  (record { fst-eq = g-eq-g';
                            snd-eq = prop-has-all-paths {{g-f-eq-idx}} (transport (λ a → (a ∘ f) == (identity x)) g-eq-g' (is-iso.a iso-f)) (is-iso.a iso-f') ;
@@ -67,14 +67,14 @@ module _ (X : PreCategory) where
       Lemma1  x y f i j = ! (equality_right (is-iso.g i)) ∙ (ap4 (is-iso.g i) (identity x) (is-iso.g j ∘ f) (! (is-iso.a j)) ∙ (! (composition (is-iso.g i) f (is-iso.g j))  ∙ (ap3 (f ∘ is-iso.g i) (identity y) (is-iso.g j) (is-iso.b i) ∙ equality_left (is-iso.g j))))
 
 
-  Lemma913a' : (x y : Objects) (f : Hom x y) → has-level (-1) (is-iso X x y f)
-  Lemma913a' x y f = all-paths-is-prop (Lemma913a x y f)
+  Lemma913a : (x y : Objects) (f : Hom x y) → has-level (-1) (is-iso X x y f)
+  Lemma913a x y f = all-paths-is-prop (Lemma913a' x y f)
 
   _≅_ : Objects → Objects → Set
   _≅_ a b = Σ (Hom a b) (is-iso X a b)
 
   Lemma913b : (a b : Objects) → has-level 0 (a ≅ b)
-  Lemma913b a b = Σ-level (Homs-are-hsets a b) (λ x → raise-level -1 (Lemma913a' a b x))
+  Lemma913b a b = Σ-level (Homs-are-hsets a b) (λ x → raise-level -1 (Lemma913a a b x))
 
   idtoiso : (a b : Objects) → (p : a == b) → a ≅ b
   idtoiso a .a idp = record{fst = identity a ; snd = record{g = identity a ; a = equality_right (identity a) ; b = equality_right (identity a)}}
