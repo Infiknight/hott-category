@@ -26,7 +26,7 @@ record is-iso (X : PreCategory) (x y : PreCategory.Objects X) (f : PreCategory.H
   open PreCategory X
   field
     g : (Hom y x)
-    a : ( g ∘ f ) == (identity x)
+    a : (g ∘ f) == (identity x)
     b : (f ∘ g) == (identity y)
 
 module encode-decode {X : PreCategory} {x y : PreCategory.Objects X} {f : PreCategory.Hom X x y}  where
