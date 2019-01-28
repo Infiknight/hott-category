@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module Bool where
+module lib.Bool where
 
 {- The type of booleans. There are two booleans: true and false -}
 data Bool : Set where
