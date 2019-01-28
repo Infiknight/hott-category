@@ -1,8 +1,8 @@
 {-# OPTIONS --without-K #-}
 
-open import Naturals
-open import Equality
-open import SetsandPropositionsSolutions
+open import lib.Naturals
+open import lib.Equality
+open import lib.SetsandPropositionsSolutions
 
 open import Agda.Primitive renaming (Level to ULevel)
 
