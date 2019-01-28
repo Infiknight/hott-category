@@ -1,8 +1,8 @@
 {-# OPTIONS --without-K #-}
 
-open import Naturals
-open import Equality
-open import SetsandPropositionsSolutions
+open import lib.Naturals
+open import lib.Equality
+open import lib.SetsandPropositionsSolutions
 
 open import Agda.Primitive renaming (Level to ULevel)
 
@@ -75,13 +75,10 @@ module _ (X : PreCategory) where
 
   Lemma913b : (a b : Objects) → is-hset (a ≅ b)
   Lemma913b a b = all-hprops-are-hsets λ x y → {! !}
-    
+
 
   idtoiso : (a b : Objects) → (p : a == b) → a ≅ b
   idtoiso a .a idp = record{fst = identity a ; snd = record{g = identity a ; a = equality_right (identity a) ; b = equality_right (identity a)}}
-
-
-  
 
 
 
@@ -97,12 +94,12 @@ record Functor : Set₁ where
     F-arrows : {x y : PreCategory.Objects source} (f : PreCategory.Hom source x y) → (PreCategory.Hom target (F-objects x) (F-objects y))
     F-identity : (x : PreCategory.Objects source) → (F-arrows (PreCategory.identity source x) == PreCategory.identity target (F-objects x))
     F-composition : {x y z : PreCategory.Objects source} (f : PreCategory.Hom source x y) (g : PreCategory.Hom source y z) → F-arrows (PreCategory._∘_ source g f) == PreCategory._∘_ target (F-arrows g) (F-arrows f)
-    
+
 record natural-transformation (F G : Functor) : Set₁ where
   field
     source-identity : Functor.source F == Functor.source G
     target-identity : Functor.target F == Functor.target G
-    
+
 -}
 record Functor (C D : PreCategory) : Set  where
   field
@@ -114,18 +111,19 @@ record Functor (C D : PreCategory) : Set  where
 record natural-transformation {C D : PreCategory} (F : Functor C D) (G : Functor C D) : Set  where
   field
     component : (x : PreCategory.Objects C) → PreCategory.Hom D (Functor.F-objects F x) (Functor.F-objects G x)
-    naturality : {x y : PreCategory.Objects C} (f : PreCategory.Hom C x y) → PreCategory._∘_ D (Functor.F-arrows G f ) (component x ) == PreCategory._∘_ D (component y) (Functor.F-arrows F f)
+    naturality : {x y : PreCategory.Objects C} (f : PreCategory.Hom C x y) →
+                  PreCategory._∘_ D (Functor.F-arrows G f ) (component x ) == PreCategory._∘_ D (component y) (Functor.F-arrows F f)
 
 open natural-transformation
 functor-PreCategory : (A B : PreCategory) → PreCategory
 functor-PreCategory A B = record
-                            { Objects =   Functor A B               
+                            { Objects =   Functor A B
                             ; Hom = λ F G → natural-transformation F G
-                            ; Homs-are-hsets = {!!}
+                            ; Homs-are-hsets = {! !}
                             ; identity = λ F → record{component = λ x → PreCategory.identity B (Functor.F-objects F x) ; naturality = λ f → PreCategory.equality_left B (Functor.F-arrows F f) ∙ ! (PreCategory.equality_right B (Functor.F-arrows F f))}
-                            ; _∘_ = λ g f → record { component = λ x → PreCategory._∘_ B (component g x) (component f x) ; naturality = λ f₁ → PreCategory.composition {!!} {!!} {!!} {!!} }
-                            ; equality_right = {!!}
-                            ; equality_left = {!!}
-                            ; composition = {!!}
+                            ; _∘_ = λ g f → record { component = λ x → PreCategory._∘_ B (component g x) (component f x) ;
+                                naturality = λ h → {!   !} }
+                            ; equality_right = {! !}
+                            ; equality_left = {! !}
+                            ; composition = {! !}
                             }
-    

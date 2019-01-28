@@ -7,7 +7,7 @@
 open import Agda.Primitive renaming (Level to ULevel)
 
 {- The module takes a universe level α as an implicit parameter. -}
-module Equality where
+module lib.Equality where
 
 {- Equality is given as an inductive definition. If X is a type
    at level α, then the equality type is also at level α.

@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module Naturals where
+module lib.Naturals where
 
 {- The definition of the natural numbers in agda -}
 data ℕ : Set where
@@ -35,7 +35,7 @@ double : ℕ → ℕ
 double zero = zero
 double (succ n) = succ (succ (double n))
 
-{- Sometimes it is necessary or more convenient to use recursion terms 
+{- Sometimes it is necessary or more convenient to use recursion terms
    instead of pattern matching -}
 {- We define the recursion term for ℕ as follows -}
 ℕ-rec : (X : Set) (x : X) (s : ℕ → X → X) → ℕ → X
