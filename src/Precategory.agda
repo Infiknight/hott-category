@@ -32,6 +32,5 @@ module Precategory where
     id-on : {C : Precategory} (x : objects C) → (arrows C x x)
     id-on {C} x = id-arrow C x
 
-
     _::_∘_ : (C : Precategory) → ∀ {x y z} → (arrows C y z) → (arrows C x y) → (arrows C x z)
     _::_∘_ C g f = Precategory._∘_ C g f
