@@ -1,9 +1,0 @@
-open import Functor
-open import Category
-open import Precategory
-
-record Left-Adjoint (F : Functor A B) : Set where
-       field
-	G : Functor B A
-
-

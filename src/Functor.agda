@@ -91,13 +91,15 @@ Functor-on-arr-associativity : {A B C D : Precategory} (H : Functor C D) (G : Fu
 Functor-on-arr-associativity H G F = λ= λ x → idp
 
 
-record Left-Adjoint {A B : Precategory} (F : Functor A B) : Set₁ where
-  field
-    G : Functor B A
-    N : Natural-transformation (Identity-Functor A) (G * F)
-    E : Natural-transformation (F * G) (Identity-Functor B)
-    --p : nat-tr-comp ({!left-composite F (F * G) (Identity-Functor B) E)!} {!(right-composite (Identity-Functor A) (G * F) F N)!} == nat-tr-id F
-    --p : (nat-tr-comp (right-composite (Identity-Functor A) (G * F) F N) (left-composite ?))) == (nat-tr-id F)
-    p : nat-tr-comp (right-composite (Identity-Functor A) (G * F) F N) (left-composite {!F!} (F * G) {!Identity-Functor B!} {!E!}) == nat-tr-id F
-    
+Functor-associativity : {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) → ((H * (G * F)) == ((H * G) * F))
+Functor-associativity H G F = {!!}
 
+Nat-tr-comp-path-middle : {A B : Precategory} {F G H I : Functor A B} (N : Natural-transformation F G) (M : Natural-transformation H I) (p : G == H) → (Natural-transformation F I)
+Nat-tr-comp-path-middle N M idp = nat-tr-comp N M
+
+Nat-tr-comp-path-initial : {A B : Precategory} {F G F' : Functor A B} (N : Natural-transformation F G) (p : F == F') → (Natural-transformation F' G)
+Nat-tr-comp-path-initial N idp = N
+
+Nat-tr-comp-path-end : {A B : Precategory} {F G G' : Functor A B} (N : Natural-transformation F G) (p : G == G') → (Natural-transformation F G')
+
+Nat-tr-comp-path-end N idp = N
