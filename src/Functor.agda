@@ -1,7 +1,9 @@
-{-# OPTIONS --without-K --rewriting #-}
+{-# OPTIONS --without-K --rewriting --type-in-type #-}
 
 open import lib.Basics renaming (_∘_ to _after_)
 open import Precategory
+open import lib.types.Sigma
+open import lib.types.Pi
 
 record Functor (C D : Precategory) : Set₁  where
   field
@@ -11,56 +13,28 @@ record Functor (C D : Precategory) : Set₁  where
     respects-comp : ∀ {x y z} → (f : hom C x y) → (g : hom C y z ) →
                     (on-arrows (C :: g ∘ f )) == (D :: (on-arrows g) ∘ (on-arrows f))
 
-_on-obj_ : ∀ {C D} → Functor C D → [ C ] → [ D ]
-_on-obj_ F x = Functor.on-objects F x
 
-_on-arr_ : ∀ {C D} (F : Functor C D) → {x y : [ C ]} → (f : hom C x y) → hom D (F on-obj x) (F on-obj y)
-_on-arr_ F f = Functor.on-arrows F f
+module _ { C D : Precategory } where
 
-record Natural-transformation {C D : Precategory} (F G : Functor C D) : Set₁  where
-   field
-     component : (x : [ C ]) → hom D (F on-obj x) (G on-obj x)
-     naturality : ∀ {x y} → (f : hom C x y) →
-                  (D :: (G on-arr f) ∘ (component x)) == (D :: (component y) ∘ (F on-arr f))
+  _on-obj_ : (Functor C D) → [ C ] → [ D ]
+  _on-obj_ F = Functor.on-objects F
 
-open Functor
-open Natural-transformation
+  _on-arr_ : (F : Functor C D) → ∀ {x y} → (f : hom C x y) → hom D (F on-obj x) (F on-obj y)
+  _on-arr_ F f = Functor.on-arrows F f
 
-_at_ : ∀ {C D} {F G : Functor C D} → (Natural-transformation F G) → (x : [ C ]) → hom D (F on-obj x) (G on-obj x)
-_at_ = component
+-- precategory-set : Precategory
+-- precategory-set = record { objects = Σ Set (is-set)
+--                           ; arrows = λ x y → (fst x) → (fst y)
+--                           ; id-arrow =  λ x y → y
+--                           ; homs-are-hsets = {!   !}
+--                           ; _∘_ = λ g f → g after f
+--                           ; ∘-unit-l = idp
+--                           ; ∘-unit-r = idp
+--                           ; assoc = idp }
 
-nat-tr-id : ∀ {C D} (F : Functor C D) → Natural-transformation F F
-nat-tr-id {C} {D} F = record { component = λ x → id-on {D} (F on-obj x) ; naturality = λ F → Precategory.∘-unit-r D ∙ ! (Precategory.∘-unit-l D) }
-
-nat-tr-comp : ∀ {C D} { F G H : Functor C D} → Natural-transformation F G → Natural-transformation G H → Natural-transformation F H
-nat-tr-comp {C} {D} {F} {G} {H} α β =
-  record { component = λ x → D :: (β at x) ∘ (α at x) ;
-           naturality = λ {x} {y} f → {! ap (λ h → D :: (β at y) ∘ h) (naturality α f) !} }
-
-functor-precategory : (A B : Precategory) → Precategory
-functor-precategory A B = record { objects = Functor A B
-                                  ; arrows = λ F G → Natural-transformation F G
-                                  ; id-arrow = nat-tr-id
-                                  ; homs-are-hsets = {!   !}
-                                  ; _∘_ = λ α β → record { component = λ x → B :: (α at x) ∘ (β at x) ;
-                                                           naturality = λ f → {!   !} }
-                                  ; ∘-unit-l = {!   !}
-                                  ; ∘-unit-r = {!   !}
-                                  ; assoc = {!   !} }
-
-
-
-_*_ : {A B C : Precategory} (G : Functor B C) (F : Functor A B) → (Functor A C)
-_*_  G F = record
-                             { on-objects = λ x → G on-obj (F on-obj x) 
-                             ; on-arrows = λ f →  G on-arr (F on-arr f)
-                             ; respects-id = λ x → ap (λ f → G on-arr f) (respects-id F x) ∙ respects-id G ( F on-obj x)
-                             ; respects-comp = λ f g → ap (λ f → G on-arr f) (respects-comp F f g) ∙ respects-comp G (F on-arr f) (F on-arr g)
-                             }
-
-
-left-composite : {A B C : Precategory} (F : Functor A B) (G H : Functor B C) (N : Natural-transformation G H) → (Natural-transformation (G * F) (H * F))
-left-composite F G H N = record { component = λ x → N at (F on-obj x) ; naturality = λ f → naturality N (F on-arr f) }
-
-right-composite : {B C D : Precategory} (G H : Functor B C) (K : Functor C D) (N : Natural-transformation G H)  → (Natural-transformation (K * G) (K * H))
-right-composite G H K N = record { component = λ x → K on-arr (component N x) ; naturality = λ {x} {y} f →  (! (respects-comp K (component N x) (H on-arr f)) ∙ ap (_on-arr_ K) (naturality N f)) ∙ respects-comp K (G on-arr f) (component N y)}
+_*_ : ∀ {A B C} (G : Functor B C) (F : Functor A B) → (Functor A C)
+_*_  G F = record { on-objects = λ x → G on-obj (F on-obj x)
+                   ; on-arrows = λ f →  G on-arr (F on-arr f)
+                   ; respects-id = λ x → ap (on-arrows G) (respects-id F x) ∙ respects-id G ( F on-obj x)
+                   ; respects-comp = λ f g → ap (on-arrows G) (respects-comp F f g) ∙ respects-comp G (F on-arr f) (F on-arr g) }
+           where open Functor

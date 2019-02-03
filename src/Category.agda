@@ -78,4 +78,3 @@ module _ (X : PreCategory) where
 
   idtoiso : (a b : Objects) → (p : a == b) → a ≅ b
   idtoiso a .a idp = record{fst = identity a ; snd = record{g = identity a ; a = equality_right (identity a) ; b = equality_right (identity a)}}
-

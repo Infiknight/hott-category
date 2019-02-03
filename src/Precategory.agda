@@ -4,9 +4,8 @@ open import lib.Basics renaming (_∘_ to _after_)
 
 module Precategory where
 
-  record Precategory : Set₂ where
-    field
-
+record Precategory : Set₂ where
+  field
       objects : Set₁
       arrows : (x y : objects) → Set₁
       id-arrow : ∀ x → arrows x x
@@ -18,7 +17,7 @@ module Precategory where
       ∘-unit-r : ∀ {x y} {f : arrows x y} →  (f ∘ id-arrow x) == f
       assoc : ∀ {x y z w} {f : arrows x y} {g : arrows y z} {h : arrows z w} → (h ∘ (g ∘ f)) == ((h ∘ g) ∘ f)
 
-  module _ where
+module _ where
     open Precategory
 
     hom : (C : Precategory) → objects C → objects C → Set₁
