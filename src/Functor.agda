@@ -131,24 +131,6 @@ Is-Fully-Faithful F = (Is-Faithful F) , (Is-Full F)
 Is-Essentially-Surjective : {A B : Precategory} (F : Functor A B) → Set₁
 Is-Essentially-Surjective {A} {B} F = (b : obj B) → is-prop (Σ (obj A) λ a → ({!B!} ≅ {!F on-obj a!}) {!b!})
 
--- Defining the precategory of all sets as per Example 9.1.5.
--- We have tried different ways to define hom for this category but
--- ran into persistent type level related errors, so ultimately we
--- decided to start using type-in-type rather than going back and editing
--- type level information into our definitions.
-𝓢𝓮𝓽 : Precategory
-𝓢𝓮𝓽 = record { ob = Σ Set (is-set)
-                          ; hom = λ x y → (π₁ x) → (π₁ y)
-                          ; id = λ x x₁ → x₁
-                          ; homs-are-sets = Lem
-                          ; _∘_ = λ f g → f after g
-                          ; ∘-unit-l = idp   
-                          ; ∘-unit-r = idp   
-                          ; ∘-assoc = idp    }
-                            where
-                              Lem : (a b : Σ Set (is-set)) → has-level 0 (π₁ a → π₁ b)
-                              Lem (fst₁ , snd₁) (fst₂ , snd₂) = Π-level (λ x → has-level-in (λ x₁ y → has-level-apply-instance {{snd₂}}))
-
 -- Here we define the hom set functor. Currying Aᵒᵖ by Lemma 9.5.3 would yield the yoneda functor 𝒚 : A → 𝓢𝓮𝓽ᴬᵒᵖ.
 hom-func : (A : Precategory) → Functor ((A ᵒᵖ) x A) 𝓢𝓮𝓽
 hom-func A = record
