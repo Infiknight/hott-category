@@ -1,17 +1,20 @@
-{-# OPTIONS --without-K --rewriting #-}
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --without-K --rewriting --type-in-type --allow-unsolved-metas #-}
+
 open import lib.Basics renaming (_∘_ to _after_)
-open import Precategory
 open import lib.Function2
+open import lib.types.Pi
 open import PropositionsAsTypes
 open import Category
+
+open Precategory
+open Isomorphisms
 
 record Functor (C D : Precategory) : Set₁  where
   field
     on-objects : [ C ] → [ D ]
-    on-arrows : ∀ {x y} → hom C x y → hom D (on-objects x) (on-objects y)
-    respects-id : (x : [ C ]) → (on-arrows (id-on {C} x)) == (id-on {D} (on-objects x))
-    respects-comp : ∀ {x y z} → (f : hom C x y) → (g : hom C y z ) →
+    on-arrows : ∀ {a b} → hom C a b → hom D (on-objects a) (on-objects b)
+    respects-id : (a : [ C ]) → (on-arrows (id C a)) == (id D (on-objects a))
+    respects-comp : ∀ {a b c} → (f : hom C a b) → (g : hom C b c ) →
                     (on-arrows (C :: g ∘ f )) == (D :: (on-arrows g) ∘ (on-arrows f))
 
 -- The part of a functor that assigns objects in one precategory to objects in another.
@@ -19,7 +22,7 @@ _on-obj_ : ∀ {C D} → Functor C D → [ C ] → [ D ]
 _on-obj_ F x = Functor.on-objects F x
 
 -- The part of a functor that assigns arrows in one precategory to arrows in another.
-_on-arr_ : ∀ {C D} (F : Functor C D) → {x y : [ C ]} → (f : hom C x y) → hom D (F on-obj x) (F on-obj y)
+_on-arr_ : ∀ {C D} (F : Functor C D) → {a b : [ C ]} → (f : hom C a b) → hom D (F on-obj a) (F on-obj b)
 _on-arr_ F f = Functor.on-arrows F f
 
 -- Definition of the identity functor for a given precategory A.
@@ -31,43 +34,37 @@ Identity-Functor A = record
                        ; respects-comp = λ f g → idp
                        }
 
-
-
-
 record Natural-transformation {C D : Precategory} (F G : Functor C D) : Set₁  where
    field
-     component : (x : [ C ]) → hom D (F on-obj x) (G on-obj x)
-     naturality : ∀ {x y} → (f : hom C x y) →
-                  (D :: (G on-arr f) ∘ (component x)) == (D :: (component y) ∘ (F on-arr f))
+     component : (a : [ C ]) → hom D (F on-obj a) (G on-obj a)
+     naturality : ∀ {a b} → (f : hom C a b) →
+                  (D :: (G on-arr f) ∘ (component a)) == (D :: (component b) ∘ (F on-arr f))
 
 open Functor
 open Natural-transformation
 
-_at_ : ∀ {C D} {F G : Functor C D} → (Natural-transformation F G) → (x : [ C ]) → hom D (F on-obj x) (G on-obj x)
+_at_ : ∀ {C D} {F G : Functor C D} → (Natural-transformation F G) → (a : [ C ]) → hom D (F on-obj a) (G on-obj a)
 _at_ = component
 
 -- Definition of the identity natural transformation which assigns each object x, the identity arrow of x.
 nat-tr-id : ∀ {C D} (F : Functor C D) → Natural-transformation F F
-nat-tr-id {C} {D} F = record { component = λ x → id-on {D} (F on-obj x) ; naturality = λ F → Precategory.∘-unit-r D ∙ ! (Precategory.∘-unit-l D) }
+nat-tr-id {C} {D} F = record { component = λ x → id D (F on-obj x) ; naturality = λ F → Precategory.∘-unit-r D ∙ ! (Precategory.∘-unit-l D) }
 
-nat-tr-comp : ∀ {C D} { F G H : Functor C D} → Natural-transformation F G → Natural-transformation G H → Natural-transformation F H
+nat-tr-comp : ∀ {C D} {F G H : Functor C D} → Natural-transformation F G → Natural-transformation G H → Natural-transformation F H
 nat-tr-comp {C} {D} {F} {G} {H} α β =
   record { component = λ x → D :: (β at x) ∘ (α at x) ;
            naturality = λ {x} {y} f → {! ap (λ h → D :: (β at y) ∘ h) (naturality α f) !} }
 
-
-
 functor-precategory : (A B : Precategory) → Precategory
-functor-precategory A B = record { objects = Functor A B
-                                  ; arrows = λ F G → Natural-transformation F G
-                                  ; id-arrow = nat-tr-id
-                                  ; homs-are-hsets = {!   !}
+functor-precategory A B = record { ob = Functor A B
+                                  ; hom = λ F G → Natural-transformation F G
+                                  ; id = nat-tr-id
+                                  ; homs-are-sets = {!   !}
                                   ; _∘_ = λ α β → record { component = λ x → B :: (α at x) ∘ (β at x) ;
                                                            naturality = λ f → {!   !} }
                                   ; ∘-unit-l = {!   !}
                                   ; ∘-unit-r = {!   !}
-                                  ; assoc = {!   !} }
-
+                                  ; ∘-assoc = {!   !} }
 
 -- Definition of Functor composition.
 _*_ : {A B C : Precategory} (G : Functor B C) (F : Functor A B) → (Functor A C)
@@ -77,7 +74,6 @@ _*_  G F = record
                              ; respects-id = λ x → ap (λ f → G on-arr f) (respects-id F x) ∙ respects-id G ( F on-obj x)
                              ; respects-comp = λ f g → ap (λ f → G on-arr f) (respects-comp F f g) ∙ respects-comp G (F on-arr f) (F on-arr g)
                              }
-
 
 -- Given a functor F : A → B, we have that F * (Identity-Functor A) = F.
 Id-Functor-Equality-Right : {A B : Precategory} (F : Functor A B) → ((F * (Identity-Functor A)) == F)
@@ -105,11 +101,8 @@ Functor-on-obj-associativity H G F = λ= λ x → idp
 Functor-on-arr-associativity : {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) → (( on-objects H) after (( on-objects G) after ( on-objects F))) ==  (((on-objects H) after (on-objects G)) after  (on-objects F))
 Functor-on-arr-associativity H G F = λ= λ x → idp
 
-
 Functor-associativity : {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) → ((H * (G * F)) == ((H * G) * F))
 Functor-associativity H G F = {!!}
-
-
 
 -- If F = F', and N is a natural transformation from F to G, then N is also a natural transformation from F' to G.
 Nat-tr-comp-path-initial : {A B : Precategory} {F G F' : Functor A B} (N : Natural-transformation F G) (p : F == F') → (Natural-transformation F' G)
@@ -122,8 +115,6 @@ Nat-tr-comp-path-end N idp = N
 -- If N is a natural transformation from F to G, and M is a natural transformation from H to I, and G = H, then we can compose the two to get a natural transformation from F to I.
 Nat-tr-comp-path-middle : {A B : Precategory} {F G H I : Functor A B} (N : Natural-transformation F G) (M : Natural-transformation H I) (p : G == H) → (Natural-transformation F I)
 Nat-tr-comp-path-middle N M idp = nat-tr-comp N M
-
-
 
 -- A Functor F is faithful if for all objects a b, the function F' : Hom(a, b) → Hom(Fa, Fb), such that for all f ∈ Hom(a, b), f ↦ F(f); is injective.
 Is-Faithful : {A B : Precategory} (F : Functor A B) → Set₁
@@ -139,3 +130,42 @@ Is-Fully-Faithful F = (Is-Faithful F) , (Is-Full F)
 
 Is-Essentially-Surjective : {A B : Precategory} (F : Functor A B) → Set₁
 Is-Essentially-Surjective {A} {B} F = (b : obj B) → is-prop (Σ (obj A) λ a → ({!B!} ≅ {!F on-obj a!}) {!b!})
+
+-- Defining the precategory of all sets as per Example 9.1.5.
+-- We have tried different ways to define hom for this category but
+-- ran into persistent type level related errors, so ultimately we
+-- decided to start using type-in-type rather than going back and editing
+-- type level information into our definitions.
+𝓢𝓮𝓽 : Precategory
+𝓢𝓮𝓽 = record { ob = Σ Set (is-set)
+                          ; hom = λ x y → (π₁ x) → (π₁ y)
+                          ; id = λ x x₁ → x₁
+                          ; homs-are-sets = Lem
+                          ; _∘_ = λ f g → f after g
+                          ; ∘-unit-l = idp   
+                          ; ∘-unit-r = idp   
+                          ; ∘-assoc = idp    }
+                            where
+                              Lem : (a b : Σ Set (is-set)) → has-level 0 (π₁ a → π₁ b)
+                              Lem (fst₁ , snd₁) (fst₂ , snd₂) = Π-level (λ x → has-level-in (λ x₁ y → has-level-apply-instance {{snd₂}}))
+
+-- Here we define the hom set functor. Currying Aᵒᵖ by Lemma 9.5.3 would yield the yoneda functor 𝒚 : A → 𝓢𝓮𝓽ᴬᵒᵖ.
+hom-func : (A : Precategory) → Functor ((A ᵒᵖ) x A) 𝓢𝓮𝓽
+hom-func A = record
+               { on-objects = λ { (a , b) → (hom A a b , homs-are-sets A a b) }
+               ; on-arrows = λ { (f , f') → λ g → A :: (A :: f' ∘ g) ∘ f }
+               ; respects-id = λ { (a , b) → ! (
+                                       (λ g → g) =⟨ λ= (λ x → ! (∘-unit-l A)) ⟩
+                            (λ g → (id A b) ⊚ g) =⟨ λ= (λ x → ! (∘-unit-r A)) ⟩
+                 (λ g → ((id A b) ⊚ g) ⊚ id A a) =∎
+                 )}
+               ; respects-comp = λ { (g , g') (f , f') →
+                 (λ h → ((f' ⊚ g') ⊚ h) ⊚ (g ⊚ f)) =⟨ λ= (λ x → ∘-assoc A) ⟩
+                 (λ h → (((f' ⊚ g') ⊚ h) ⊚ g) ⊚ f) =⟨ λ= (λ x → ap (λ x₁ → (x₁ ⊚ g) ⊚ f) (! (∘-assoc A))) ⟩
+                 (λ h → ((f' ⊚ (g' ⊚ h)) ⊚ g) ⊚ f) =⟨ λ= (λ x → ap (λ x₁ → x₁ ⊚ f) (! (∘-assoc A))) ⟩
+                 (λ h → (f' ⊚ ((g' ⊚ h) ⊚ g)) ⊚ f) =∎
+                 }
+               }
+               where
+                 _⊚_ : ∀ {a b c} → (hom A b c) → (hom A a b) → hom A a c
+                 g ⊚ f = (A :: g ∘ f)
