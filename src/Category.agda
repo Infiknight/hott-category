@@ -22,6 +22,8 @@ record PreCategory : Set₁ where
       equality_left : {x y : Objects} → (f : Hom x y) →  ((f ∘ (identity x)) == f)
       composition : {x y z w : Objects} → (f : Hom x y) → (g : Hom y z) → (h : Hom z w) → ((h ∘ (g ∘ f)) == ((h ∘ g) ∘ f))
 
+
+
 record is-iso (X : PreCategory) (x y : PreCategory.Objects X) (f : PreCategory.Hom X x y) : Set where
   open PreCategory X
   field
@@ -47,12 +49,14 @@ module encode-decode {X : PreCategory} {x y : PreCategory.Objects X} {f : PreCat
 module _ (X : PreCategory) where
   open PreCategory X
   open encode-decode
+  
+  -- If g and g' are two equal arrows, then f ∘ g = f ∘ g'
+  arrow-comp-equality-right : {x y z : Objects } (g g' : Hom x y) (f : Hom y z) (p : g == g') → ( (f ∘ g) == (f ∘ g'))
+  arrow-comp-equality-right  g .g f idp = idp
 
-  ap3 : {x y z : Objects } (g g' : Hom x y) (f : Hom y z) (p : g == g') → ( (f ∘ g) == (f ∘ g'))
-  ap3 g .g f idp = idp
-
-  ap4 : {x y z : Objects} (g : Hom x y) (f f' : Hom y z) (p : f == f') → ((f ∘ g) == (f' ∘ g))
-  ap4 g f .f idp = idp
+  -- If f and f' are two equal arrows, then f ∘ g = f' ∘ g
+  arrow-comp-equality-left : {x y z : Objects} (g : Hom x y) (f f' : Hom y z) (p : f == f') → ((f ∘ g) == (f' ∘ g))
+  arrow-comp-equality-left g f .f idp = idp
 
   Lemma913a' : (x y : Objects) (f : Hom x y) → has-all-paths (is-iso X x y f)
   Lemma913a' x y f iso-f iso-f' = let g-eq-g' = Lemma1 x y f iso-f iso-f'
@@ -64,7 +68,7 @@ module _ (X : PreCategory) where
                            trd-eq = prop-has-all-paths {{g-f-eq-idy}} (transport (λ a → (f ∘ a) == (identity y)) g-eq-g' (is-iso.b iso-f)) (is-iso.b iso-f') })
     where
       Lemma1 : (x y : Objects ) (f : Hom x y) (i j : is-iso X x y f) → is-iso.g i == is-iso.g j
-      Lemma1  x y f i j = ! (equality_right (is-iso.g i)) ∙ (ap4 (is-iso.g i) (identity x) (is-iso.g j ∘ f) (! (is-iso.a j)) ∙ (! (composition (is-iso.g i) f (is-iso.g j))  ∙ (ap3 (f ∘ is-iso.g i) (identity y) (is-iso.g j) (is-iso.b i) ∙ equality_left (is-iso.g j))))
+      Lemma1  x y f i j = ! (equality_right (is-iso.g i)) ∙ (arrow-comp-equality-left (is-iso.g i) (identity x) (is-iso.g j ∘ f) (! (is-iso.a j)) ∙ (! (composition (is-iso.g i) f (is-iso.g j))  ∙ (arrow-comp-equality-right (f ∘ is-iso.g i) (identity y) (is-iso.g j) (is-iso.b i) ∙ equality_left (is-iso.g j))))
 
 
   Lemma913a : (x y : Objects) (f : Hom x y) → has-level (-1) (is-iso X x y f)
