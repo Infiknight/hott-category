@@ -1,12 +1,9 @@
-{-# OPTIONS --without-K --rewriting #-}
-{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --without-K --rewriting --allow-unsolved-metas  --type-in-type #-}
 
 open import lib.Basics
-open import Precategory
+open import Category
 open import Functor
-
-
-
+open import Natural-transformations
 
 record Left-Adjoint {A B : Precategory} (F : Functor A B) : Set₁ where
   field
