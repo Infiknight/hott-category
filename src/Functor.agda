@@ -23,13 +23,11 @@ _on-arr_ F f = Functor.on-arrows F f
 
 open Functor
 -- Definition of the identity functor for a given precategory A.
-Identity-Functor : (A : Precategory) → (Functor A A)
-Identity-Functor A = record
-                       { on-objects = λ x → x
-                       ; on-arrows = λ x₁ → x₁
-                       ; respects-id = λ x → idp
-                       ; respects-comp = λ f g → idp
-                       }
+id-functor : (C : Precategory) → (Functor C C)
+id-functor C = record { on-objects = λ x → x
+                     ; on-arrows = λ x₁ → x₁
+                     ; respects-id = λ x → idp
+                     ; respects-comp = λ f g → idp }
 
 -- Definition of Functor composition.
 _*_ : {A B C : Precategory} (G : Functor B C) (F : Functor A B) → (Functor A C)
@@ -38,41 +36,47 @@ _*_  G F = record { on-objects = λ x → G on-obj (F on-obj x)
                    ; respects-id = λ x → ap (λ f → G on-arr f) (respects-id F x) ∙ respects-id G ( F on-obj x)
                    ; respects-comp = λ f g → ap (λ f → G on-arr f) (respects-comp F f g) ∙ respects-comp G (F on-arr f) (F on-arr g) }
 
--- Given a functor F : A → B, we have that F * (Identity-Functor A) = F.
-Id-Functor-Equality-Right : {A B : Precategory} (F : Functor A B) → ((F * (Identity-Functor A)) == F)
-Id-Functor-Equality-Right F = idp
+-- Unit laws for functors
+module _ {A B : Precategory} (F : Functor A B) where
+  -- Given a functor F : A → B, we have that F * (id-functor A) = F.
+  *-unit-r : (F * (id-functor A)) == F
+  *-unit-r = idp
 
--- Given a functor F : A → B, we have (Identity-Functor B) * F = F.
-Id-Functor-Equality-Left : {A B : Precategory} (F : Functor A B) → (((Identity-Functor B) * F) == F)
-Id-Functor-Equality-Left record { on-objects = on-objects ; on-arrows = on-arrows ; respects-id = respects-id ; respects-comp = respects-comp } = {! !}
+  -- Given a functor F : A → B, we have (Identity-Functor B) * F = F.
+  -- Postulate it since we it is not definitionally equal to F and
+  postulate
+      *-unit-l : ((id-functor B) * F) == F
 
--- The part of a functor which assigns objects in one precategory to objects in another is associative.
-Functor-on-obj-associativity : {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) → (( on-objects H) after (( on-objects G) after ( on-objects F))) ==  (((on-objects H) after (on-objects G)) after  (on-objects F))
-Functor-on-obj-associativity H G F = λ= λ x → idp
+-- Associativity for functors
+module _ {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) where
 
--- The part of a functor which assigns arrows in one precategory to arrows in another is associative.
-Functor-on-arr-associativity : {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) → (( on-objects H) after (( on-objects G) after ( on-objects F))) ==  (((on-objects H) after (on-objects G)) after  (on-objects F))
-Functor-on-arr-associativity H G F = λ= λ x → idp
+  -- The part of a functor which assigns objects in one precategory to objects in another is associative.
+  *-assoc-obj : ((H on-obj_) after ((G on-obj_) after (F on-obj_ ))) ==  (((H on-obj_) after (G on-obj_)) after (F on-obj_))
+  *-assoc-obj = λ= λ x → idp
 
-Functor-associativity : {A B C D : Precategory} (H : Functor C D) (G : Functor B C) (F : Functor A B) → ((H * (G * F)) == ((H * G) * F))
-Functor-associativity H G F = {! !}
+  -- The part of a functor which assigns arrows in one precategory to arrows in another is associative.
+  *-assoc-hom : ((H on-obj_) after ((G on-obj_) after (F on-obj_)) == (((H on-obj_) after (G on-obj_)) after (F on-obj_)))
+  *-assoc-hom = λ= λ x → idp
 
--- If F = F', and N is a natural transformation from F to G, then N is also a natural transformation from F' to G.
+  postulate
+    *-assoc : (H * (G * F)) == ((H * G) * F)
 
--- A Functor F is faithful if for all objects a b, the function F' : Hom(a, b) → Hom(Fa, Fb), such that for all f ∈ Hom(a, b), f ↦ F(f); is injective.
-Is-Faithful : {A B : Precategory} (F : Functor A B) → Set₁
-Is-Faithful {A} {B} F = (a b : obj A) → is-inj (on-arrows F {a} {b})
+module _ {A B : Precategory} (F : Functor A B) where
 
--- A functor is full if the above function is surjective.
-Is-Full : {A B : Precategory} (F : Functor A B) → Set₁
-Is-Full {A} {B} F = (a b : obj A) → is-surj (on-arrows F {a} {b})
+  -- A Functor F is faithful if for all objects a b, the function F' : Hom(a, b) → Hom(Fa, Fb), such that for all f ∈ Hom(a, b), f ↦ F(f); is injective.
+  is-faithful : Set₁
+  is-faithful = (a b : obj A) → is-inj (on-arrows F {a} {b})
 
--- A functor is fully faithful if it is full and faithful.
-Is-Fully-Faithful : {A B : Precategory} (F : Functor A B) → Σ Set₁ (λ x → Set₁)
-Is-Fully-Faithful F = (Is-Faithful F) , (Is-Full F)
+  -- A functor is full if the above function is surjective.
+  is-full : Set₁
+  is-full = (a b : obj A) → is-surj (on-arrows F {a} {b})
 
-Is-Essentially-Surjective : {A B : Precategory} (F : Functor A B) → Set₁
-Is-Essentially-Surjective {A} {B} F = (b : obj B) → is-prop (Σ (obj A) λ a → (B ≅ (F on-obj a)) b)
+  -- A functor is fully faithful if it is full and faithful.
+  is-fully-faithful :  Σ Set₁ (λ _ → Set₁)
+  is-fully-faithful = is-full , is-faithful
+
+  is-essentially-surjective : Set₁
+  is-essentially-surjective = (b : obj B) → is-prop (Σ (obj A) λ a → (B ≅ (F on-obj a)) b)
 
 -- Here we define the hom set functor. Currying Aᵒᵖ by Lemma 9.5.3 would yield the yoneda functor 𝒚 : A → 𝓢𝓮𝓽ᴬᵒᵖ.
 hom-func : (A : Precategory) → Functor ((A ᵒᵖ) 𝓧 A) 𝓢𝓮𝓽
