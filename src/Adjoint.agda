@@ -1,27 +1,38 @@
-{-# OPTIONS --without-K --rewriting --allow-unsolved-metas  --type-in-type #-}
+{-# OPTIONS --without-K --rewriting --type-in-type #-}
 
 open import lib.Basics
 open import Category
 open import Functor
-open import Natural-transformations
+open import Natural-transformation
+
+module Adjoint where
+
+-- workaround for ap
+module _ {A B : Precategory} where
+  -- If F = F', and α is a natural transformation from F to G, then α is also a natural transformation from F' to G.
+  nat-tr-comp-path-initial :  {F G F' : Functor A B} (α : F ==> G) (p : F == F') → (F' ==> G)
+  nat-tr-comp-path-initial α idp = α
+
+  -- If G = G' and α is a natural transformation from F to G, then α is also a natural transformation from F to G'.
+  nat-tr-comp-path-end : {F G G' : Functor A B} (α : F ==> G) (p : G == G') → (F ==> G')
+  nat-tr-comp-path-end α idp = α
+
+  -- If α is a natural transformation from F to G, and β is a natural transformation from H to I, and G = H, then we can compose the two to get a natural transformation from F to I.
+  nat-tr-comp-path-middle : {F G H I : Functor A B} (β : H ==> I) (α : F ==> G) (p : G == H) → (F ==> I)
+  nat-tr-comp-path-middle β α idp = β ∘ₙ α
 
 record Left-Adjoint {A B : Precategory} (F : Functor A B) : Set₁ where
   field
     G : Functor B A
-    N : Natural-transformation (Identity-Functor A) (G * F) -- unit
-    E : Natural-transformation (F * G) (Identity-Functor B)  -- counit
-    -- (EF)(FN) = Identity natural transformation from F to F
-    p : Nat-tr-comp-path-end (Nat-tr-comp-path-initial (Nat-tr-comp-path-middle (right-composite (Identity-Functor A) (G * F) F N) (left-composite F (F * G) (Identity-Functor B) E) (Functor-associativity F G F)) (Id-Functor-Equality-Right F)) (Id-Functor-Equality-Left F) == nat-tr-id F
-    -- (GE)(NG) = Identity natural transformation from G to G
-    q : Nat-tr-comp-path-end (Nat-tr-comp-path-initial (Nat-tr-comp-path-middle (left-composite G (Identity-Functor A) (G * F) N) (right-composite (F * G) (Identity-Functor B) G E) (! (Functor-associativity G F G))) (Id-Functor-Equality-Left G)) (Id-Functor-Equality-Right G) == nat-tr-id G
-
+    η : (id-functor A) ==> (G * F) -- unit
+    ε : (F * G) ==> (id-functor B)  -- counit
+    adj-F : (nat-tr-comp-path-end (nat-tr-comp-path-initial (nat-tr-comp-path-middle (ε *ₗ F) (F *ᵣ η) $ *-assoc F G F ) *-unit-r) *-unit-l) == nat-tr-id F
+    adj-G : (nat-tr-comp-path-end (nat-tr-comp-path-initial (nat-tr-comp-path-middle (G *ᵣ ε) (η *ₗ G) $ ! (*-assoc G F G )) *-unit-l) *-unit-r) == nat-tr-id G
 
 record Right-Adjoint {A B : Precategory} (F : Functor A B) : Set₁ where
   field
     G : Functor B A
-    N : Natural-transformation (Identity-Functor B) (F * G) -- unit
-    E : Natural-transformation (G * F) (Identity-Functor A) -- counit
-    -- (EG)(GN) = Identity natural transformation from G to G
-    p : Nat-tr-comp-path-end (Nat-tr-comp-path-initial (Nat-tr-comp-path-middle (right-composite (Identity-Functor B) (F * G) G N) (left-composite G (G * F) (Identity-Functor A) E) (Functor-associativity G F G)) (Id-Functor-Equality-Right G)) (Id-Functor-Equality-Left G) == nat-tr-id G
-    -- (FE)(NF) = Identity natural transformation from F to F
-    q : Nat-tr-comp-path-end (Nat-tr-comp-path-initial (Nat-tr-comp-path-middle (left-composite F (Identity-Functor B) (F * G) N) (right-composite (G * F) (Identity-Functor A) F E) (! (Functor-associativity F G F))) (Id-Functor-Equality-Left F)) (Id-Functor-Equality-Right F) == nat-tr-id F
+    η : (id-functor B) ==> (F * G)
+    ε : (G * F) ==> (id-functor A)
+    adj-F : (nat-tr-comp-path-end (nat-tr-comp-path-initial (nat-tr-comp-path-middle (F *ᵣ ε) (η *ₗ F) $ ! (*-assoc F G F)) *-unit-l) *-unit-r) == nat-tr-id F
+    adj-G : (nat-tr-comp-path-end (nat-tr-comp-path-initial (nat-tr-comp-path-middle (ε *ₗ G) (G *ᵣ η) $ *-assoc G F G ) *-unit-r) *-unit-l) == nat-tr-id G

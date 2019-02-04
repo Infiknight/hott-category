@@ -149,7 +149,9 @@ module Isomorphisms (A : Precategory) where
 -- We have tried different ways to define hom for this category but
 -- ran into persistent type level related errors, so ultimately we
 -- decided to start using type-in-type rather than going back and editing
--- type level information into our definitions.
+-- type level information into our definitions. Note that the hom sets have
+-- to be Set₁ to accommodate natural transformations for the functor category.
+
 𝓢𝓮𝓽 : Precategory
 𝓢𝓮𝓽 = record { ob = Σ Set (is-set)
                         ; hom = λ x y → (π₁ x) → (π₁ y)

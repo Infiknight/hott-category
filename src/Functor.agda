@@ -1,4 +1,4 @@
-{-# OPTIONS --without-K --rewriting --type-in-type --allow-unsolved-metas #-}
+{-# OPTIONS --without-K --rewriting --type-in-type  #-}
 
 open import lib.Basics renaming (_∘_ to _after_)
 open import lib.Function2
@@ -37,7 +37,7 @@ _*_  G F = record { on-objects = λ x → G on-obj (F on-obj x)
                    ; respects-comp = λ f g → ap (λ f → G on-arr f) (respects-comp F f g) ∙ respects-comp G (F on-arr f) (F on-arr g) }
 
 -- Unit laws for functors
-module _ {A B : Precategory} (F : Functor A B) where
+module _ {A B : Precategory} {F : Functor A B} where
   -- Given a functor F : A → B, we have that F * (id-functor A) = F.
   *-unit-r : (F * (id-functor A)) == F
   *-unit-r = idp
