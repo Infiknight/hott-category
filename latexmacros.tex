@@ -27,6 +27,10 @@ maxnames=6
 \usepackage{catchfilebetweentags}
 \usepackage{graphicx}
 
+\usepackage{enumerate}
+\usepackage{enumitem}
+\setenumerate[0]{label=\alph*.}
+
 % Haskell code listings in our own style
 \usepackage{listings,color}
 \definecolor{lightgrey}{gray}{0.35}
@@ -63,3 +67,4 @@ maxnames=6
 % load hyperref as late as possible for compatibility
 \usepackage[pdftex]{hyperref}
 \hypersetup{pdfborder = {0 0 0}, breaklinks = true}
+

@@ -1,39 +1,30 @@
 \documentclass[12pt,a4paper]{article}
 \input{latexmacros.tex}
 
-\title{Homotopy Type Theory: Category Theory}
-\author{Georgi Nakov, Daniel Shaheen, Wijnands van Woerkom}
+\title{Homotopy Type Theory Project report: Category Theory}
+\author{Daniel Shaheen, Georgi Nakov, Wijnands van Woerkom}
 \date{}
-\hypersetup{pdfauthor={Georgi Nakov, Daniel Shaheen, Wijnands van Woerkom}, pdftitle={Homotopy Type Theory: Category Theory}}
+\hypersetup{pdfauthor={Daniel Shaheen, Georgi Nakov, Wijnand van Woerkom}, pdftitle={Homotopy Type Theory: Category Theory}}
 
 \begin{document}
-
 \maketitle
+The aim of the project was to implement the foundational types and records occurring in basic category theory as outlined in chapter 9 of the Homotopy Type Theory book.
 
-\begin{abstract}
-
-Some abstract stuff. 
-
-\end{abstract}
-
-\vfill
-
-\clearpage
-
-\tableofcontents
-
-\clearpage
-
-\section{Introduction}
-
-\input{intro.tex}
-
-\section{Implementation in Agda}
-
-%% Here we will import the literate Agda files
-%%\input{src/}
-
-\addcontentsline{toc}{section}{Bibliography}
-\printbibliography
-
+We defined the following notions:
+\begin{enumerate}[nosep]
+  \item category and precategory (in the file \ttt{Category.agda})
+  \item isomorphisms in a category, the type \ttt{$a \cong b$} of all isomorphic arrows from $a$ to $b$ (in \ttt{Category.agda})
+  \item functors - composition of functors, unit laws and associativity (in \ttt{Functor.agda})
+  \item natural transformations - composition, unit laws and associativity \\(in \ttt{Natural-transformation.agda})
+  \item definition of adjoints ( in \ttt{Adjoints.agda})
+  \item left and right whiskering - composition of a functor with a natural transformation (in \ttt{Natural-transformation.agda})
+  \item proof of Lemma 9.1.3 - for arbitrary arrow $f$ in a category $\mathcal{C}$, \ttt{is-iso(f)} is a mere proposition and $a \cong b$ is a set (has homotopy level 0) (the proof is split in \ttt{Category.agda} and \ttt{Lemmas.ttt})
+  \item lemma 9.1.4 - \ttt{idtoiso} - in \ttt{Category.agda}
+  \item lemma 9.1.8 - the type of objects in an arbitrary category has h-level 1 - and lemma 9.1.9 - in \ttt{Lemmas.agda} 
+  \item construction of the precategory $\mathit{Set}$ of all sets ( of h-level 0) and functions between them - in (\ttt{Category.agda})
+  \item construction of the functor precategory - the objects are functors between fixed precategories $\mathcal{A}$ and $\mathcal{B}$, the morphisms are natural transformations (in \ttt{Natural-transformation.agda})
+  \item opposite and product (pre)categories - in \ttt{Categories.agda}
+  \item the hom functor $Hom_A : A^{op} \times A \rightarrow Set$, which maps a pair of objects (a, b) to $hom_A(a, b)$ and maps a pair of arrows $(f , f') : Hom_{A^{op} \times A} ((a, b), (a', b'))$ to the function which maps g in $hom_A(a, b)$ to $f' \circ g \circ f$ - in \ttt{Functor.agda}
+\end{enumerate}
+A natural extension of the current work would be implementation of lemmas 9.5.3 and 9.5.4 (Yoneda lemma).
 \end{document}
