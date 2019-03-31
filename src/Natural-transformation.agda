@@ -1,10 +1,13 @@
 {-# OPTIONS --without-K --rewriting --type-in-type #-}
 
 open import lib.Basics renaming (_∘_ to _after_)
+open import lib.Base
 open import Category
 open import lib.types.Sigma
 open import lib.types.Pi
 open import Functor
+open import lib.Funext
+
 
 module Natural-transformation where
 
@@ -74,6 +77,7 @@ module _ {C D : Precategory} {F G : Functor C D} where
   nat= idp idp = idp
 
 
+
   𝑵-is-prop : (c : 𝑪) → is-prop (𝑵 c)
   -- unwrap the explicit arguments
   𝑵-is-prop c = Πi-level λ x → Πi-level λ y → Π-level λ f →
@@ -81,6 +85,10 @@ module _ {C D : Precategory} {F G : Functor C D} where
 
   𝑵-has-all-paths : {c₁ c₂ : 𝑪} → (n₁ : 𝑵 c₁) → (n₂ : 𝑵 c₂) → (p : c₁ == c₂) → (n₁ == n₂ [ 𝑵 ↓ p ])
   𝑵-has-all-paths {c} {.c} f g idp = prop-has-all-paths {{ 𝑵-is-prop c }} f g
+
+
+  nat2= : {α β : F ==> G} → (p : component α == component β)  → (α == β)
+  nat2= {α} {β} idp = nat= {α} {β} idp (𝑵-has-all-paths {component α} {component β} (λ f → naturality α f) (λ f → naturality β f) idp)
 
   -- show that nat-transformations are a set via detour to Σ types
   nat-is-set : is-set (F ==> G)
@@ -133,3 +141,82 @@ _*ᵣ_ : ∀ {B C D} (K : Functor C D) → {G H : Functor B C} → (γ : G ==> H
 _*ᵣ_ K {G} {H} γ = nat-tr (λ x → K on-arr (γ at x)) $
                           λ {x} {y} f → (! (respects-comp K (γ at x) (H on-arr f)) ∙ ap (on-arrows K) (naturality γ f)) ∙ respects-comp K (G on-arr f) (γ at y)
                   where open Functor.Functor
+
+
+index-functor : (A B C : Precategory ) → Functor (A 𝓧 B) C → (a : obj A) → Functor B C
+index-functor A B C F a = record
+  { on-objects = λ x → Functor.on-objects F (a , x)
+  ; on-arrows = λ x → Functor.on-arrows F ((id A a) , x)
+  ; respects-id = λ a₁ → Functor.respects-id F (a , a₁)
+  ; respects-comp = λ {a₁} {b₁} {c₁} f g →
+    Functor.on-arrows F (id A a , (B :: g ∘ f)) =⟨(ap (λ z → Functor.on-arrows F (z , (B :: g ∘ f))) (! (∘-unit-l A)))⟩
+    Functor.on-arrows F ((A :: (id A a) ∘ (id A a)) , (B :: g ∘ f)) =⟨ (Functor.respects-comp F ((id A a) , f) ((id A a) , g)) ⟩
+    (C :: Functor.on-arrows F (id A a , g) ∘ Functor.on-arrows F (id A a , f)) =∎
+  }
+
+
+
+
+curry' : {A B C : Precategory} → Functor (A 𝓧 B) C → Functor A (functor-precategory B C)
+curry' {A} {B} {C} F = record
+  { on-objects = λ x → index-functor A B C F x
+  ; on-arrows = λ {a} {b} z → nat-tr (λ x → Functor.on-arrows F (z , id B x)) (λ {x} {y} f →
+    (C :: Functor.on-arrows F (id A b , f) ∘ Functor.on-arrows F (z , id B x)) =⟨(! (Functor.respects-comp F (z , (id B x)) ((id A b) , f)))⟩
+    (Functor.on-arrows F ((A 𝓧 B) :: (id A b , f) ∘ (z , id B x))) =⟨(ap (Functor.on-arrows F) idp)⟩
+    (Functor.on-arrows F ( ( ( A :: (id A b) ∘ z ) , (B :: f ∘ (id B x)) ) ) ) =⟨(ap (Functor.on-arrows F) (pair×= ((Precategory.∘-unit-l A) ∙ ! (∘-unit-r A)) ((∘-unit-r B) ∙ ! (∘-unit-l B))))⟩
+    (Functor.on-arrows F ( ( (A :: z ∘ (id A a)) , (B :: (id B y) ∘ f ) ) ) ) =⟨(ap (Functor.on-arrows F) idp)⟩
+    (Functor.on-arrows F ((A 𝓧 B) :: (z , id B y) ∘ (id A a , f))) =⟨(Functor.respects-comp F ((id A a) , f) (z , (id B y)))⟩
+    (C :: Functor.on-arrows F (z , id B y) ∘ Functor.on-arrows F (id A a , f)) =∎ )
+  ; respects-id = λ a → nat2=  (λ= (λ x → (Functor.on-arrows F (id A a , id B x)) =⟨(Functor.respects-id F ((a , x)))⟩
+    (id C ( Functor.on-objects F (a , x) )) =⟨(idp)⟩
+    (id C (index-functor A B C F a on-obj x)) =⟨(idp)⟩
+    (component (nat-tr-id (index-functor A B C F a)) x) =∎))
+  ; respects-comp = λ {a} {b} {c} f g → nat2= (λ= (λ x →
+      (Functor.on-arrows F ((A :: g ∘ f) , id B x)) =⟨(ap (λ z → Functor.on-arrows F ((A :: g ∘ f) , z)) (! (∘-unit-l B)))⟩
+      (Functor.on-arrows F ((A :: g ∘ f) , (B :: (id B x) ∘ (id B x)) )) =⟨(Functor.respects-comp F (f , (id B x)) (g , (id B x)))⟩
+      ( C :: (Functor.on-arrows F (g , id B x)) ∘ (Functor.on-arrows F (f , id B x)) ) =∎))
+    }
+
+uncurry' : {A B C : Precategory} → Functor A (functor-precategory B C) → Functor (A 𝓧 B) C
+uncurry' {A} {B} {C} F = record
+  { on-objects = λ x → (F on-obj (pr₁ x)) on-obj (pr₂ x)
+    ; on-arrows = λ {c} {d} x → C :: (component (F on-arr (pr₁ x)) (pr₂ d)) ∘ ((F on-obj (pr₁ c)) on-arr (pr₂ x))
+    ; respects-id = λ a →
+      (C :: component (Functor.on-arrows F (id A (pr₁ a))) (pr₂ a) ∘ Functor.on-arrows (Functor.on-objects F (pr₁ a)) (id B (pr₂ a))) =⟨(ap (λ z → C :: component (Functor.on-arrows F (id A (pr₁ a))) (pr₂ a) ∘ z) (Functor.respects-id (F on-obj pr₁ a) (pr₂ a)))⟩
+      (C :: component (Functor.on-arrows F (id A (pr₁ a))) (pr₂ a) ∘ (id C ((F on-obj (pr₁ a)) on-obj (pr₂ a) ) ) ) =⟨(ap (λ z → C :: (component z (pr₂ a)) ∘ id C (Functor.on-objects (Functor.on-objects F (pr₁ a)) (pr₂ a))) (Functor.respects-id F (pr₁ a)))⟩
+      (C :: component (id (functor-precategory B C) (F on-obj (pr₁ a))) (pr₂ a) ∘ (id C ((F on-obj (pr₁ a)) on-obj (pr₂ a) ) ) ) =⟨(ap (λ z → C :: z ∘ id C ((F on-obj pr₁ a) on-obj pr₂ a)) idp)⟩
+      (C :: (id C ((F on-obj (pr₁ a)) on-obj (pr₂ a) ) ) ∘ (id C ((F on-obj (pr₁ a)) on-obj (pr₂ a) ) ) ) =⟨ (∘-unit-l C) ⟩
+      (id C (Functor.on-objects (Functor.on-objects F (pr₁ a)) (pr₂ a))) =∎
+    ; respects-comp = λ {a} {b} {c} f g →
+      (C :: component (Functor.on-arrows F (pr₁ ((A 𝓧 B) :: g ∘ f))) (pr₂ c) ∘ Functor.on-arrows (Functor.on-objects F (pr₁ a)) (pr₂ ((A 𝓧 B) :: g ∘ f))) =⟨(ap2 (λ z₁ z₂ → C :: component z₁ (pr₂ c) ∘ z₂) (Functor.respects-comp F (pr₁ f) (pr₁ g)) (Functor.respects-comp (F on-obj pr₁ a) (pr₂ f) (pr₂ g)))⟩
+      (C :: component ((functor-precategory B C) :: (F on-arr (pr₁ g) ) ∘ (F on-arr (pr₁ f))) (pr₂ c) ∘ ( C :: ((F on-obj (pr₁ a)) on-arr (pr₂ g)) ∘ ((F on-obj (pr₁ a)) on-arr (pr₂ f) )) ) =⟨({!   !})⟩
+      (C :: C :: component (Functor.on-arrows F (pr₁ g)) (pr₂ c) ∘ Functor.on-arrows (Functor.on-objects F (pr₁ b)) (pr₂ g) ∘ (C :: component (Functor.on-arrows F (pr₁ f)) (pr₂ b) ∘ Functor.on-arrows (Functor.on-objects F (pr₁ a)) (pr₂ f))) =∎
+  }
+
+--WIP
+module OpenModality {P : Set} {pprop : is-prop P} where
+
+  ◯ : (A : Set) → Set
+  ◯ A = P → A
+
+  ηᵒ  : {A : Set} (a : A) → ◯ A
+  ηᵒ a x = a
+
+  indₒ : {A : Set} {B : (◯ A) → Set} →
+         ((a : A) → ◯ (B (ηᵒ {A} a) )) →
+         ( (z : ◯ A) → ◯ (B z) )
+  indₒ {A} {B} g  =
+          λ z x → transport B (λ= (λ p → ap z (prop-path pprop x p))) (g (z x) x)
+         --λ z x → transport B (λ= ( ηᵒ {A} (z x)) z (λ p → ap z (pprop x p)))  (g (z x) x)
+
+  iii : {A : Set} {B : (◯ A) → Set} →
+                  (f :  (a : A) → ◯ (B (ηᵒ {A} a) )) →
+                  (a : A) →
+                  ( indₒ {A} {B} f (ηᵒ a) == f a)
+  iii {A} {B} f a = λ= (λ x →
+                    (indₒ f (ηᵒ a) x) =⟨ {!   !} ⟩
+                    (f a x) =∎ )
+
+  --iii {A} {B} f a = λ= (indₒ f (ηᵒ a)) (λ p → f a p) (λ p →
+  --                      (indₒ f (λ x → a) p) =〈_〉
+  --                      (f a p) =∎ )
